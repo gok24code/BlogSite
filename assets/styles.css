@@ -255,15 +255,28 @@ body {
 .read-more {
     display: inline-flex;
     align-items: center;
-    color: var(--primary-color);
+    color: white;
     text-decoration: none;
     font-weight: 700;
     font-size: 1rem;
     transition: all 0.2s ease;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .read-more:hover {
     gap: 0.5rem;
+}
+
+/* About Section */
+.about-section {
+    margin-top: 4rem;
+}
+
+.about-section p {
+    color: white;
+    font-size: 1.1rem;
+    line-height: 1.8;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 /* Sidebar Styles */
