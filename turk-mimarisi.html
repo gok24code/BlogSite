@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Türk Mimarisinde Estetik ve Şuur - Türklük ve Türk Şuuru Blog">
+    <title>Türk Mimarisinde Estetik ve Şuur - Türklük ve Türk Şuuru</title>
+    <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+    <header class="header">
+        <nav class="navbar">
+            <div class="container">
+                <div class="navbar-brand">
+                    <h1>Türklük ve Türk Şuuru</h1>
+                    <p class="subtitle">Kültür, Dil, Kimlik</p>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="index.html">Anasayfa</a></li>
+                    <li><a href="yazilar.html">Yazılar</a></li>
+                    <li><a href="index.html#hakkımda">Hakkında</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <article class="blog-post">
+                <div class="post-header">
+                    <span class="post-date">05 Mayıs 2026</span>
+                    <span class="post-category">Sanat ve Mimari</span>
+                </div>
+
+                <h1 class="post-title">Türk Mimarisinde Estetik ve Şuur</h1>
+
+                <img src="https://images.unsplash.com/photo-1524231757912-21f4fe3a7200?auto=format&fit=crop&w=1200&q=80" alt="Türk Mimarisi" class="post-featured-image">
+
+                <div class="post-content">
+                    <p>Türk mimarisi, sadece taş ve harçtan ibaret değildir; o, bir milletin dünya görüşünün, inancının ve estetik anlayışının somutlaşmış halidir. Orta Asya'daki çadırlardan Anadolu'daki muazzam külliyelere kadar uzanan bu yolculuk, büyük bir medeniyet şuurunun izlerini taşır.</p>
+
+                    <h2>Doğa ile Uyum</h2>
+                    <p>Klasik Türk mimarisinin en belirgin özelliği, doğa ile kurduğu naif dengedir. Bir Osmanlı evi veya bir Selçuklu kervansarayı, bulunduğu çevreye hükmetmeye çalışmaz; aksine onunla bir bütün oluşturur. Topografyaya saygı duyan, rüzgarı ve ışığı en verimli şekilde kullanan bu anlayış, günümüzün "sürdürülebilir mimari" kavramına asırlar öncesinden verilmiş bir cevaptır.</p>
+
+                    <h2>Mimar Sinan ve Geometrik Deha</h2>
+                    <p>Mimar Sinan, bu şuurun zirve noktasıdır. Onun eserlerindeki matematiksel kesinlik ve akustik başarılar, sadece teknik bir beceri değil, evrendeki nizamı mimariye yansıtma çabasıdır. Kubbe yapısı, gökyüzünün sonsuzluğunu ve birliği (tevhid) simgelerken, minareler göğe yükselen birer elif gibi durur.</p>
+
+                    <h2>Günümüzdeki Durum</h2>
+                    <p>Maalesef günümüzde bu estetik şuurdan uzaklaşılmış, yerini kimliksiz ve ruhsuz beton yığınlarına bırakmıştır. Türk şehrinin karakterini oluşturan o ince zevk ve mahalle kültürü, modernleşme adı altında feda edilmektedir. Geleceği inşa ederken, köklerimizdeki bu estetik dehayı yeniden keşfetmek zorundayız.</p>
+                </div>
+
+                <div class="post-footer">
+                    <a href="yazilar.html" class="back-link">← Yazılara Dön</a>
+                </div>
+            </article>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; 2026 Türklük ve Türk Şuuru. Tüm hakları saklıdır.</p>
+            <p class="footer-note">Bu site statik bir arşiv olarak tasarlanmıştır.</p>
+        </div>
+    </footer>
+
+    <style>
+        .blog-post { background: var(--bg-white); padding: 3rem; border-radius: 8px; box-shadow: var(--shadow); border-left: 4px solid var(--secondary-color); }
+        .post-header { display: flex; gap: 1rem; margin-bottom: 2rem; align-items: center; flex-wrap: wrap; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border-color); }
+        .post-date { font-size: 0.9rem; color: var(--text-light); font-weight: 500; }
+        .post-category { display: inline-block; background-color: var(--primary-color); color: var(--bg-white); padding: 0.4rem 0.8rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+        .post-title { font-size: 2.5rem; color: var(--primary-color); margin-bottom: 2rem; line-height: 1.2; }
+        .post-content { font-size: 1.1rem; line-height: 1.9; color: var(--text-dark); }
+        .post-content h2 { font-size: 1.6rem; color: var(--primary-color); margin-top: 2rem; margin-bottom: 1rem; }
+        .post-content p { margin-bottom: 1.5rem; text-align: justify; }
+        .post-footer { margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--border-color); }
+        .back-link { display: inline-block; color: var(--secondary-color); text-decoration: none; font-weight: 600; transition: all 0.3s ease; padding: 0.5rem 0; border-bottom: 2px solid transparent; }
+        .back-link:hover { border-bottom-color: var(--secondary-color); padding-right: 0.5rem; }
+        @media (max-width: 768px) { .blog-post { padding: 1.5rem; } .post-title { font-size: 1.8rem; } .post-content { font-size: 1rem; } .post-content h2 { font-size: 1.3rem; } }
+    </style>
+
+    <script src="assets/script.js"></script>
+</body>
+</html>
