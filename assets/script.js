@@ -27,12 +27,43 @@ const observer = new IntersectionObserver(function(entries) {
     });
 }, observerOptions);
 
-document.querySelectorAll('.blog-card').forEach(card => {
-    card.style.opacity = '0';
-    card.style.transform = 'translateY(20px)';
-    card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
-    observer.observe(card);
-});
+function initAnimations() {
+    document.querySelectorAll('.blog-card').forEach(card => {
+        card.style.opacity = '0';
+        card.style.transform = 'translateY(20px)';
+        card.style.transition = 'opacity 0.6s ease, transform 0.6s ease';
+        observer.observe(card);
+    });
+}
+
+// Dynamic Image Loader from JSON
+async function loadDynamicImages() {
+    try {
+        const response = await fetch('assets/blog-data.json');
+        const data = await response.json();
+
+        // Update Blog Cards (index.html and yazilar.html)
+        document.querySelectorAll('.blog-card').forEach(card => {
+            const postId = card.getAttribute('data-post-id');
+            if (postId && data.posts[postId]) {
+                const img = card.querySelector('.blog-card-image');
+                if (img) img.src = data.posts[postId].image;
+            }
+        });
+
+        // Update Featured Images (article pages)
+        const postContent = document.querySelector('.blog-post');
+        if (postContent) {
+            const bodyId = document.body.getAttribute('data-post-id');
+            if (bodyId && data.posts[bodyId]) {
+                const featuredImg = document.querySelector('.post-featured-image');
+                if (featuredImg) featuredImg.src = data.posts[bodyId].image;
+            }
+        }
+    } catch (error) {
+        console.error('Error loading blog data:', error);
+    }
+}
 
 // Mobile menu toggle (if needed in future)
 function initMobileMenu() {
@@ -45,8 +76,12 @@ function initMobileMenu() {
 }
 
 // Initialize on page load
-document.addEventListener('DOMContentLoaded', initMobileMenu);
+document.addEventListener('DOMContentLoaded', () => {
+    initMobileMenu();
+    initAnimations();
+    loadDynamicImages();
+});
+
 window.addEventListener('resize', initMobileMenu);
 
-// Track page views (can be extended for analytics)
 console.log('Blog site loaded successfully');
