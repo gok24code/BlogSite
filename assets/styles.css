@@ -23,7 +23,7 @@ body {
     font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
     line-height: 1.7;
     color: var(--text-dark);
-    background-image: url('https://blogger.googleusercontent.com/img/a/AVvXsEjuwNmhyMWroEaznrtBBk2mLU1cBID6dsoiwtczz9VtBtZNsclJdhW6xtEnrOTFEP4UIxTv4DO1oZX_q9GGLdYdo5qTFq7IsCEYJIAdBA9apuinEMwvaEdK1L6zz1teSUUSGZOmQwr5hRX8-kCqbfmyrIiO8vOSMvMYfjJQJ9LedfcJE09lTy4XX9wNyBf2=w1600');
+    background: linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.35)), url('https://blogger.googleusercontent.com/img/a/AVvXsEjuwNmhyMWroEaznrtBBk2mLU1cBID6dsoiwtczz9VtBtZNsclJdhW6xtEnrOTFEP4UIxTv4DO1oZX_q9GGLdYdo5qTFq7IsCEYJIAdBA9apuinEMwvaEdK1L6zz1teSUUSGZOmQwr5hRX8-kCqbfmyrIiO8vOSMvMYfjJQJ9LedfcJE09lTy4XX9wNyBf2=w1600');
     background-attachment: fixed;
     background-size: auto;
     -webkit-font-smoothing: antialiased;
@@ -223,7 +223,7 @@ body {
 
 .blog-title {
     font-size: 1.75rem;
-    color: var(--text-dark);
+    color: var(--primary-color);
     margin-bottom: 1.25rem;
     line-height: 1.3;
     font-weight: 800;
@@ -231,7 +231,7 @@ body {
 }
 
 .blog-excerpt {
-    color: var(--text-light);
+    color: var(--primary-color);
     margin-bottom: 1.5rem;
     font-size: 1.05rem;
 }
@@ -241,7 +241,7 @@ body {
     display: flex;
     gap: 1.25rem;
     font-size: 0.85rem;
-    color: var(--text-light);
+    color: var(--primary-color);
     margin-bottom: 1rem;
     font-weight: 500;
 }
@@ -255,12 +255,11 @@ body {
 .read-more {
     display: inline-flex;
     align-items: center;
-    color: white;
+    color: var(--primary-color);
     text-decoration: none;
     font-weight: 700;
     font-size: 1rem;
     transition: all 0.2s ease;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .read-more:hover {
@@ -296,7 +295,7 @@ body {
 
 .widget-title {
     font-size: 1.1rem;
-    color: white;
+    color: var(--primary-color);
     margin-bottom: 1.5rem;
     font-weight: 800;
     text-transform: uppercase;
@@ -304,7 +303,6 @@ body {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .widget-title::before {
@@ -364,7 +362,7 @@ body {
     align-items: center;
     padding: 0.75rem 1rem;
     text-decoration: none;
-    color: var(--text-dark);
+    color: var(--primary-color);
     font-weight: 600;
     border-radius: 10px;
     transition: all 0.2s ease;
@@ -413,7 +411,7 @@ body {
 
 /* Footer */
 .footer {
-    background: #1a1a1a;
+    background: var(--primary-color);
     color: var(--secondary-color);
     padding: 5rem 0 3rem;
     text-align: center;
