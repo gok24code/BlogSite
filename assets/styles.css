@@ -6,72 +6,40 @@
 }
 
 :root {
-    --primary-color: #215c36; /* Daha belirgin ve canlı bir koyu yeşil */
-    --secondary-color: #c41e3a;
-    --accent-color: #ffd700;
-    --text-dark: #2c3e50;
-    --text-light: #7f8c8d;
-    --bg-light: #f8f9fa;
+    --primary-color: #E30A17; /* Türk Bayrağı Al Rengi */
+    --secondary-color: #FFFFFF; /* Türk Bayrağı Ak Rengi */
+    --accent-color: #f1f1f1;
+    --text-dark: #1a1a1a;
+    --text-light: #666666;
+    --bg-light: #f5f5f5;
     --bg-white: #ffffff;
-    --border-color: #e0e0e0;
-    --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
+    --border-color: #dddddd;
+    --shadow: 0 4px 12px rgba(227, 10, 23, 0.1);
+    --shadow-lg: 0 12px 24px rgba(227, 10, 23, 0.15);
 }
 
 body {
-    font-family: 'Segoe UI', 'Trebuchet MS', sans-serif;
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
     line-height: 1.6;
     color: var(--text-dark);
     background-color: var(--bg-light);
-    overflow-x: hidden;
-}
-
-.container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
 }
 
 /* Header and Navigation */
 .header {
     background: var(--primary-color);
-    color: var(--bg-white);
+    color: var(--secondary-color);
     box-shadow: var(--shadow-lg);
 }
 
 .navbar {
     padding: 1rem 0;
-    background-color: rgba(0, 0, 0, 0.2); /* Navbar'ı biraz daha belirgin yapalım */
-    border-bottom: 2px solid var(--secondary-color);
-}
-
-.navbar .container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.navbar-brand h1 {
-    font-size: 1.8rem;
-    font-weight: 700;
-    letter-spacing: 0.5px;
-}
-
-.navbar-brand .subtitle {
-    font-size: 0.85rem;
-    font-weight: 300;
-    opacity: 0.9;
-    margin-top: 0.25rem;
-}
-
-.nav-links {
-    display: flex;
-    list-style: none;
-    gap: 1.5rem;
+    background-color: rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .nav-links a {
-    color: var(--bg-white);
+    color: var(--secondary-color);
     text-decoration: none;
     font-weight: 700;
     transition: all 0.3s ease;
@@ -81,18 +49,91 @@ body {
 }
 
 .nav-links a:hover, .nav-links a.active {
-    color: var(--accent-color);
-    border-bottom-color: var(--accent-color);
-    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--secondary-color);
+    border-bottom-color: var(--secondary-color);
+    background-color: rgba(255, 255, 255, 0.15);
 }
 
-/* Hero Section */
 .hero {
-    background: linear-gradient(135deg, var(--primary-color) 0%, #2d7a48 100%);
-    padding: 5rem 0;
+    background: radial-gradient(circle at center, var(--primary-color) 0%, #b30812 100%);
+    padding: 6rem 0;
     text-align: center;
-    color: var(--bg-white);
-    border-bottom: 5px solid var(--secondary-color);
+    color: var(--secondary-color);
+    position: relative;
+    overflow: hidden;
+}
+
+/* Türk Bayrağı Motifi (Hafif bir dokunuş) */
+.hero::after {
+    content: '🌙⭐';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 15rem;
+    opacity: 0.05;
+    pointer-events: none;
+}
+
+.blog-card {
+    background: var(--bg-white);
+    border-radius: 12px;
+    padding: 0;
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border-left: 6px solid var(--primary-color);
+    overflow: hidden;
+}
+
+.sidebar-widget {
+    background: var(--bg-white);
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    margin-bottom: 2rem;
+    border-top: 4px solid var(--primary-color);
+}
+
+.search-btn {
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.8rem 1.2rem;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: filter 0.3s;
+}
+
+.search-btn:hover {
+    filter: brightness(1.2);
+}
+
+.footer {
+    background: #111;
+    color: var(--secondary-color);
+    padding: 4rem 0 2rem;
+    text-align: center;
+    margin-top: 4rem;
+}
+
+.admin-login-link {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 20px;
+    font-size: 0.8rem;
+    color: var(--secondary-color);
+    opacity: 0.7;
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+.admin-login-link:hover {
+    opacity: 1;
+    background: var(--primary-color);
+    border-color: var(--primary-color);
 }
 
 .hero h2 {
