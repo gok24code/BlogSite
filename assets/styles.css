@@ -23,7 +23,9 @@ body {
     font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
     line-height: 1.7;
     color: var(--text-dark);
-    background-color: var(--bg-light);
+    background-image: url('https://blogger.googleusercontent.com/img/a/AVvXsEjuwNmhyMWroEaznrtBBk2mLU1cBID6dsoiwtczz9VtBtZNsclJdhW6xtEnrOTFEP4UIxTv4DO1oZX_q9GGLdYdo5qTFq7IsCEYJIAdBA9apuinEMwvaEdK1L6zz1teSUUSGZOmQwr5hRX8-kCqbfmyrIiO8vOSMvMYfjJQJ9LedfcJE09lTy4XX9wNyBf2=w1600');
+    background-attachment: fixed;
+    background-size: auto;
     -webkit-font-smoothing: antialiased;
 }
 
