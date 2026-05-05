@@ -1,0 +1,22 @@
+# IDE ve Editor
+.vscode/
+.idea/
+.claude/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Sistem dosyaları
+.env
+.env.local
+node_modules/
+*.log
+
+# Build
+dist/
+build/
+
+# Node
+package-lock.json
