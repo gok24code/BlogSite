@@ -75,11 +75,62 @@ function initMobileMenu() {
     }
 }
 
+// Search functionality
+function initSearch() {
+    const searchInput = document.getElementById('search-input');
+    const searchBtn = document.getElementById('search-btn');
+    const searchResults = document.getElementById('search-results');
+
+    if (!searchInput) return;
+
+    function performSearch() {
+        const query = searchInput.value.toLowerCase().trim();
+        const blogCards = document.querySelectorAll('.blog-card');
+        let matchCount = 0;
+
+        if (query.length === 0) {
+            blogCards.forEach(card => card.classList.remove('hidden'));
+            searchResults.classList.remove('show');
+            return;
+        }
+
+        blogCards.forEach(card => {
+            const title = card.querySelector('.blog-title')?.textContent.toLowerCase() || '';
+            const excerpt = card.querySelector('.blog-excerpt')?.textContent.toLowerCase() || '';
+            const meta = card.querySelector('.post-meta')?.textContent.toLowerCase() || '';
+
+            const matches = title.includes(query) || excerpt.includes(query) || meta.includes(query);
+
+            if (matches) {
+                card.classList.remove('hidden');
+                matchCount++;
+            } else {
+                card.classList.add('hidden');
+            }
+        });
+
+        searchResults.classList.add('show');
+        searchResults.textContent = matchCount > 0
+            ? `${matchCount} yazı bulundu`
+            : 'Sonuç bulunamadı';
+    }
+
+    searchBtn.addEventListener('click', performSearch);
+    searchInput.addEventListener('keyup', performSearch);
+    searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            performSearch();
+        }
+    });
+}
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
     initMobileMenu();
     initAnimations();
     loadDynamicImages();
+    initSearch();
 });
 
 window.addEventListener('resize', initMobileMenu);

@@ -141,9 +141,16 @@
                   type="text"
                   placeholder="Blogda ara..."
                   class="search-input"
+                  id="search-input"
                 />
-                <button type="button" class="search-btn">🔍</button>
+                <button type="button" class="search-btn" id="search-btn">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"></circle>
+                    <path d="m21 21-4.35-4.35"></path>
+                  </svg>
+                </button>
               </form>
+              <div class="search-results" id="search-results"></div>
             </div>
 
             <div class="sidebar-widget">
@@ -190,8 +197,6 @@
     <footer class="footer">
       <div class="container">
         <p>&copy; 2026 Türklük ve Türk Şuuru. Tüm hakları saklıdır.</p>
-        <p class="footer-note">Bu site <strong>Vercel CMS</strong> altyapısı ile yönetilmektedir.</p>
-        <a href="https://vercel.com" target="_blank" class="admin-login-link">Vercel CMS Panel Girişi</a>
       </div>
     </footer>
 
