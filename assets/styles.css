@@ -6,7 +6,7 @@
 }
 
 :root {
-    --primary-color: #1a472a;
+    --primary-color: #215c36; /* Daha belirgin ve canlı bir koyu yeşil */
     --secondary-color: #c41e3a;
     --accent-color: #ffd700;
     --text-dark: #2c3e50;
@@ -34,13 +34,14 @@ body {
 
 /* Header and Navigation */
 .header {
-    background: linear-gradient(135deg, var(--primary-color) 0%, #2d5a3d 100%);
+    background: var(--primary-color);
     color: var(--bg-white);
     box-shadow: var(--shadow-lg);
 }
 
 .navbar {
     padding: 1rem 0;
+    background-color: rgba(0, 0, 0, 0.2); /* Navbar'ı biraz daha belirgin yapalım */
     border-bottom: 2px solid var(--secondary-color);
 }
 
@@ -66,7 +67,7 @@ body {
 .nav-links {
     display: flex;
     list-style: none;
-    gap: 2rem;
+    gap: 1.5rem;
 }
 
 .nav-links a {
@@ -76,21 +77,22 @@ body {
     transition: all 0.3s ease;
     padding: 0.5rem 1rem;
     border-radius: 4px;
+    border-bottom: 3px solid transparent;
 }
 
-.nav-links a:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+.nav-links a:hover, .nav-links a.active {
     color: var(--accent-color);
-    transform: translateY(-2px);
+    border-bottom-color: var(--accent-color);
+    background-color: rgba(255, 255, 255, 0.1);
 }
 
 /* Hero Section */
 .hero {
-    background: linear-gradient(135deg, rgba(26, 71, 42, 0.95), rgba(196, 30, 58, 0.95)),
-                url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 400"><defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="white" stroke-width="0.5" opacity="0.1"/></pattern></defs><rect width="1200" height="400" fill="url(%23grid)"/></svg>');
+    background: linear-gradient(135deg, var(--primary-color) 0%, #2d7a48 100%);
     padding: 5rem 0;
     text-align: center;
     color: var(--bg-white);
+    border-bottom: 5px solid var(--secondary-color);
 }
 
 .hero h2 {
@@ -378,8 +380,14 @@ a {
     color: var(--secondary-color);
 }
 
-a:visited {
+.blog-post a:visited,
+.blog-excerpt a:visited,
+.about-content a:visited {
     color: var(--primary-color);
+}
+
+.nav-links a:visited {
+    color: var(--bg-white);
 }
 
 /* Print Styles */
