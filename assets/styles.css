@@ -157,7 +157,7 @@ body {
     transform: translateX(-50%);
     width: 60px;
     height: 4px;
-    background: var(--primary-color);
+    background: white;
     border-radius: 10px;
 }
 
