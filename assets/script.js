@@ -78,7 +78,7 @@ async function loadDynamicContent() {
         // Load dynamic posts from Vercel KV API
         let dynamicPosts = {};
         try {
-            const apiRes = await fetch('/api/posts');
+            const apiRes = await fetch(`/api/posts?t=${Date.now()}`);
             if (apiRes.ok) dynamicPosts = await apiRes.json();
         } catch (e) {
             console.error('API Error, falling back to local:', e);
@@ -221,6 +221,9 @@ function initComments() {
     const postBody = document.body.getAttribute('data-post-id');
     if (!postBody) return;
 
+    // Check if comments section already exists to avoid duplication
+    if (document.querySelector('.comments-section')) return;
+
     const commentsSection = document.createElement('section');
     commentsSection.className = 'comments-section container';
     commentsSection.innerHTML = `
@@ -235,9 +238,20 @@ function initComments() {
         <div id="comments-list" class="comment-list"></div>
     `;
     
-    document.querySelector('.main-content .container').appendChild(commentsSection);
+    const mainContainer = document.querySelector('.main-content .container');
+    if (mainContainer) mainContainer.appendChild(commentsSection);
 
+    // Initial load
     loadComments(postBody);
+
+    // Auto-refresh comments every 30 seconds
+    const refreshInterval = setInterval(() => {
+        if (document.body.contains(commentsSection)) {
+            loadComments(postBody);
+        } else {
+            clearInterval(refreshInterval);
+        }
+    }, 30000);
 
     document.getElementById('submit-comment').onclick = async () => {
         const text = document.getElementById('comment-text').value;
@@ -252,37 +266,54 @@ function initComments() {
         };
 
         try {
-            await fetch('/api/comments', {
+            const res = await fetch('/api/comments', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(comment)
             });
+            
+            if (res.ok) {
+                document.getElementById('comment-text').value = '';
+                // Immediate refresh after posting
+                setTimeout(() => loadComments(postBody), 500);
+            }
         } catch (e) {
             console.error('API Error, saving locally:', e);
             const comments = JSON.parse(localStorage.getItem('comments') || '[]');
             comments.push(comment);
             localStorage.setItem('comments', JSON.stringify(comments));
+            loadComments(postBody);
         }
-
-        document.getElementById('comment-text').value = '';
-        setTimeout(() => loadComments(postBody), 500); // Give blob a moment to settle
     };
 }
 
 async function loadComments(postId) {
+    console.log('Loading comments for:', postId);
     const list = document.getElementById('comments-list');
     if (!list) return;
 
     let allComments = [];
     try {
-        const res = await fetch('/api/comments');
-        if (res.ok) allComments = await res.json();
+        const res = await fetch(`/api/comments?t=${Date.now()}`);
+        if (res.ok) {
+            allComments = await res.json();
+            console.log('Comments fetched from API:', allComments);
+        } else {
+            console.error('API responded with error:', res.status);
+        }
     } catch (e) {
-        console.error('API Error, loading from local:', e);
+        console.error('Fetch error, falling back to local storage:', e);
         allComments = JSON.parse(localStorage.getItem('comments') || '[]');
     }
 
+    // Ensure allComments is an array
+    if (!Array.isArray(allComments)) {
+        console.error('Data format error: expected array but got', typeof allComments);
+        allComments = [];
+    }
+
     const postComments = allComments.filter(c => c.postId === postId);
+    console.log('Filtered comments for this post:', postComments);
     const isAdmin = localStorage.getItem('isAdmin') === 'true';
 
     if (postComments.length === 0) {

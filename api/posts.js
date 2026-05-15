@@ -2,17 +2,23 @@ import { put, list } from '@vercel/blob';
 
 export default async function handler(request, response) {
     const { method } = request;
-    const BLOB_PATH = 'data/posts.json';
+    const BLOB_PATH = 'blog-posts.json';
 
     try {
-        // Mevcut dinamik yazıları getir
         let dynamicPosts = {};
-        const { blobs } = await list({ prefix: BLOB_PATH });
-        const existingBlob = blobs.find(b => b.pathname === BLOB_PATH);
-        
-        if (existingBlob) {
-            const res = await fetch(existingBlob.url);
-            dynamicPosts = await res.json();
+        try {
+            const { blobs } = await list();
+            const existingBlob = blobs.find(b => b.pathname === BLOB_PATH || b.pathname.endsWith('/' + BLOB_PATH));
+            
+            if (existingBlob) {
+                const res = await fetch(existingBlob.url);
+                if (res.ok) {
+                    const data = await res.json();
+                    dynamicPosts = (data && typeof data === 'object') ? data : {};
+                }
+            }
+        } catch (e) {
+            console.error('[API] Posts List Error:', e);
         }
 
         if (method === 'GET') {
@@ -38,9 +44,7 @@ export default async function handler(request, response) {
 
         if (method === 'DELETE') {
             const { postId } = request.query;
-            if (!postId) {
-                return response.status(400).json({ error: 'Post ID is required' });
-            }
+            if (!postId) return response.status(400).json({ error: 'Post ID required' });
 
             if (dynamicPosts[postId]) {
                 delete dynamicPosts[postId];
@@ -57,7 +61,7 @@ export default async function handler(request, response) {
 
         return response.status(405).json({ error: 'Method not allowed' });
     } catch (error) {
-        console.error('Blob Error:', error);
-        return response.status(500).json({ error: 'Internal server error' });
+        console.error('[API] CRITICAL POSTS ERROR:', error);
+        return response.status(500).json({ error: error.message });
     }
 }

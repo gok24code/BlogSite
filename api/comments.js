@@ -13,22 +13,30 @@ function filterText(text) {
 
 export default async function handler(request, response) {
     const { method } = request;
-    const BLOB_PATH = 'data/comments.json';
+    const BLOB_PATH = 'blog-comments.json';
 
     try {
+        console.log(`[API] Method: ${method}, Path: ${BLOB_PATH}`);
+        
         let comments = [];
         try {
+            // Try to find the blob
             const { blobs } = await list();
-            const existingBlob = blobs.find(b => b.pathname === BLOB_PATH);
+            // Filter by exact match or ending with our path
+            const existingBlob = blobs.find(b => b.pathname === BLOB_PATH || b.pathname.endsWith('/' + BLOB_PATH));
             
             if (existingBlob) {
+                console.log(`[API] Fetching from: ${existingBlob.url}`);
                 const res = await fetch(existingBlob.url);
                 if (res.ok) {
-                    comments = await res.json();
+                    const data = await res.json();
+                    comments = Array.isArray(data) ? data : [];
                 }
+            } else {
+                console.log('[API] Blob not found, starting with empty array');
             }
-        } catch (listError) {
-            console.error('List Error (Normal if first time):', listError);
+        } catch (e) {
+            console.error('[API] Error during list/fetch:', e);
         }
 
         if (method === 'GET') {
@@ -44,22 +52,22 @@ export default async function handler(request, response) {
             newComment.text = filterText(newComment.text);
             comments.push(newComment);
             
-            await put(BLOB_PATH, JSON.stringify(comments), {
+            console.log('[API] Saving to Blob...');
+            const blob = await put(BLOB_PATH, JSON.stringify(comments), {
                 access: 'public',
                 contentType: 'application/json',
                 addRandomSuffix: false
             });
+            console.log(`[API] Saved to: ${blob.url}`);
 
             return response.status(201).json(newComment);
         }
 
         if (method === 'DELETE') {
             const { id } = request.query;
-            if (!id) {
-                return response.status(400).json({ error: 'Comment ID is required' });
-            }
+            if (!id) return response.status(400).json({ error: 'ID required' });
 
-            comments = comments.filter(c => c.id !== parseInt(id) && String(c.id) !== String(id));
+            comments = comments.filter(c => String(c.id) !== String(id));
             
             await put(BLOB_PATH, JSON.stringify(comments), {
                 access: 'public',
@@ -72,7 +80,7 @@ export default async function handler(request, response) {
 
         return response.status(405).json({ error: 'Method not allowed' });
     } catch (error) {
-        console.error('Blob Server Error:', error);
+        console.error('[API] CRITICAL ERROR:', error);
         return response.status(500).json({ error: error.message });
     }
 }
