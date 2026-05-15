@@ -117,7 +117,7 @@ async function loadDynamicContent() {
             }
         }
 
-        if (window.location.pathname.includes('yazilar.html')) {
+        if (window.location.pathname.includes('yazilar.html') || document.querySelector('.blog-section')) {
             initCategoryFilter(allPosts);
         }
 
@@ -154,9 +154,12 @@ function initCategoryFilter(posts) {
 function filterByCategory(category) {
     const cards = document.querySelectorAll('.blog-card');
     cards.forEach(card => {
-        const cardCat = card.getAttribute('data-category');
-        if (category === 'Hepsi' || cardCat === category) {
+        const cardCat = card.getAttribute('data-category') || '';
+        if (category === 'Hepsi' || cardCat.trim() === category.trim()) {
             card.classList.remove('hidden');
+            // Trigger animation for filtered items
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
         } else {
             card.classList.add('hidden');
         }
