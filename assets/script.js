@@ -128,36 +128,40 @@ async function loadDynamicContent() {
 
 // Category Filter Logic
 function initCategoryFilter(posts) {
-    const blogSection = document.querySelector('.blog-section');
-    if (!blogSection) return;
+    const categoryLinks = document.querySelectorAll('.category-list li a');
+    if (categoryLinks.length === 0) return;
 
-    // Create filter container
-    const filterContainer = document.createElement('div');
-    filterContainer.className = 'category-filter-container container';
-    blogSection.parentNode.insertBefore(filterContainer, blogSection);
+    // Add 'All' link if not present
+    const categoryList = document.querySelector('.category-list');
+    if (!Array.from(categoryLinks).some(a => a.textContent.includes('Hepsi'))) {
+        const allLi = document.createElement('li');
+        allLi.innerHTML = `<a href="#">Hepsi</a><span class="category-count">${Object.keys(posts).length}</span>`;
+        categoryList.prepend(allLi);
+    }
 
-    const categories = ['Hepsi', ...new Set(Object.values(posts).map(p => p.category).filter(Boolean))];
-
-    categories.forEach(cat => {
-        const btn = document.createElement('button');
-        btn.className = 'filter-btn' + (cat === 'Hepsi' ? ' active' : '');
-        btn.textContent = cat;
-        btn.onclick = () => {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            filterByCategory(cat);
+    // Update the dynamic category links
+    document.querySelectorAll('.category-list li a').forEach(link => {
+        link.onclick = (e) => {
+            e.preventDefault();
+            const selectedCategory = link.textContent.trim();
+            
+            // UI Feedback
+            document.querySelectorAll('.category-list li a').forEach(a => a.classList.remove('active'));
+            link.classList.add('active');
+            
+            filterByCategory(selectedCategory);
         };
-        filterContainer.appendChild(btn);
     });
 }
 
 function filterByCategory(category) {
     const cards = document.querySelectorAll('.blog-card');
     cards.forEach(card => {
-        const cardCat = card.getAttribute('data-category') || '';
-        if (category === 'Hepsi' || cardCat.trim() === category.trim()) {
+        const cardCat = (card.getAttribute('data-category') || '').toLowerCase().trim();
+        const selectedCat = category.toLowerCase().trim();
+
+        if (selectedCat === 'hepsi' || cardCat.includes(selectedCat) || selectedCat.includes(cardCat)) {
             card.classList.remove('hidden');
-            // Trigger animation for filtered items
             card.style.opacity = '1';
             card.style.transform = 'translateY(0)';
         } else {
