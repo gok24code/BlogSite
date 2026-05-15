@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Yönetim Paneli - Türklük ve Türk Şuuru">
+    <title>Yönetim Paneli - Türklük ve Türk Şuuru</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🌙</text></svg>">
+    <link rel="stylesheet" href="assets/styles.css">
+</head>
+<body class="admin-page">
+    <header class="header">
+        <nav class="navbar">
+            <div class="container">
+                <div class="navbar-brand">
+                    <h1>Yönetim Paneli</h1>
+                </div>
+                <ul class="nav-links">
+                    <li><a href="index.html">Siteye Dön</a></li>
+                    <li><a href="#" id="logout-btn">Çıkış Yap</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <div class="admin-wrapper">
+                <section class="admin-section">
+                    <h3>Yeni Yazı Ekle</h3>
+                    <form id="new-post-form">
+                        <div class="form-group">
+                            <label for="post-title">Yazı Başlığı</label>
+                            <input type="text" id="post-title" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="post-category">Kategori</label>
+                            <input type="text" id="post-category" required placeholder="Örn: Kültür">
+                        </div>
+                        <div class="form-group">
+                            <label for="post-image">Görsel URL</label>
+                            <input type="url" id="post-image" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="post-content">İçerik (HTML desteklenir)</label>
+                            <textarea id="post-content" rows="10" required></textarea>
+                        </div>
+                        <button type="submit" class="submit-btn">Yayınla</button>
+                    </form>
+                </section>
+
+                <section class="admin-section">
+                    <h3>Yorumları Yönet</h3>
+                    <div id="admin-comments-list">
+                        <!-- Yorumlar burada listelenecek -->
+                        <p>Henüz yorum yok.</p>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </main>
+
+    <script src="assets/script.js"></script>
+    <script>
+        // Admin yetki kontrolü
+        if (localStorage.getItem('isAdmin') !== 'true') {
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>

@@ -1,3 +1,13 @@
+// Utility: Get anonymous username
+function getAnonUsername() {
+    let anonId = localStorage.getItem('anonId');
+    if (!anonId) {
+        anonId = Math.floor(Math.random() * 10000);
+        localStorage.setItem('anonId', anonId);
+    }
+    return `anon${anonId}userid`;
+}
+
 // Smooth scrolling for navigation links
 document.querySelectorAll('a[href^="#"]').forEach(anchor => {
     anchor.addEventListener('click', function (e) {
@@ -36,18 +46,33 @@ function initAnimations() {
     });
 }
 
-// Dynamic Image Loader from JSON
-async function loadDynamicImages() {
+// Dynamic Data Loader
+async function loadDynamicContent() {
     try {
         const response = await fetch('assets/blog-data.json');
         const data = await response.json();
 
-        // Update Blog Cards (index.html and yazilar.html)
+        // Load dynamic posts from localStorage (if any)
+        const localPosts = JSON.parse(localStorage.getItem('dynamicPosts') || '{}');
+        const allPosts = { ...data.posts, ...localPosts };
+
+        // Update Blog Cards
         document.querySelectorAll('.blog-card').forEach(card => {
             const postId = card.getAttribute('data-post-id');
-            if (postId && data.posts[postId]) {
+            const postData = allPosts[postId];
+            if (postId && postData) {
                 const img = card.querySelector('.blog-card-image');
-                if (img) img.src = data.posts[postId].image;
+                if (img) img.src = postData.image;
+                
+                // Add category label to card if not present
+                if (postData.category && !card.querySelector('.blog-category')) {
+                    const header = card.querySelector('.blog-card-content');
+                    const categorySpan = document.createElement('span');
+                    categorySpan.className = 'blog-category';
+                    categorySpan.textContent = postData.category;
+                    header.prepend(categorySpan);
+                }
+                card.setAttribute('data-category', postData.category || '');
             }
         });
 
@@ -55,24 +80,56 @@ async function loadDynamicImages() {
         const postContent = document.querySelector('.blog-post');
         if (postContent) {
             const bodyId = document.body.getAttribute('data-post-id');
-            if (bodyId && data.posts[bodyId]) {
+            if (bodyId && allPosts[bodyId]) {
                 const featuredImg = document.querySelector('.post-featured-image');
-                if (featuredImg) featuredImg.src = data.posts[bodyId].image;
+                if (featuredImg) featuredImg.src = allPosts[bodyId].image;
             }
         }
+
+        if (window.location.pathname.includes('yazilar.html')) {
+            initCategoryFilter(allPosts);
+        }
+
     } catch (error) {
         console.error('Error loading blog data:', error);
     }
 }
 
-// Mobile menu toggle (if needed in future)
-function initMobileMenu() {
-    const navLinks = document.querySelector('.nav-links');
-    const isMobile = window.innerWidth <= 768;
+// Category Filter Logic
+function initCategoryFilter(posts) {
+    const blogSection = document.querySelector('.blog-section');
+    if (!blogSection) return;
 
-    if (isMobile) {
-        // Mobile-specific behavior can be added here
-    }
+    // Create filter container
+    const filterContainer = document.createElement('div');
+    filterContainer.className = 'category-filter-container container';
+    blogSection.parentNode.insertBefore(filterContainer, blogSection);
+
+    const categories = ['Hepsi', ...new Set(Object.values(posts).map(p => p.category).filter(Boolean))];
+
+    categories.forEach(cat => {
+        const btn = document.createElement('button');
+        btn.className = 'filter-btn' + (cat === 'Hepsi' ? ' active' : '');
+        btn.textContent = cat;
+        btn.onclick = () => {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            filterByCategory(cat);
+        };
+        filterContainer.appendChild(btn);
+    });
+}
+
+function filterByCategory(category) {
+    const cards = document.querySelectorAll('.blog-card');
+    cards.forEach(card => {
+        const cardCat = card.getAttribute('data-category');
+        if (category === 'Hepsi' || cardCat === category) {
+            card.classList.remove('hidden');
+        } else {
+            card.classList.add('hidden');
+        }
+    });
 }
 
 // Search functionality
@@ -90,7 +147,7 @@ function initSearch() {
 
         if (query.length === 0) {
             blogCards.forEach(card => card.classList.remove('hidden'));
-            searchResults.classList.remove('show');
+            if (searchResults) searchResults.classList.remove('show');
             return;
         }
 
@@ -109,30 +166,202 @@ function initSearch() {
             }
         });
 
-        searchResults.classList.add('show');
-        searchResults.textContent = matchCount > 0
-            ? `${matchCount} yazı bulundu`
-            : 'Sonuç bulunamadı';
+        if (searchResults) {
+            searchResults.classList.add('show');
+            searchResults.textContent = matchCount > 0
+                ? `${matchCount} yazı bulundu`
+                : 'Sonuç bulunamadı';
+        }
     }
 
-    searchBtn.addEventListener('click', performSearch);
+    if (searchBtn) searchBtn.addEventListener('click', performSearch);
     searchInput.addEventListener('keyup', performSearch);
-    searchInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
+}
+
+// Comments Logic
+function initComments() {
+    const postBody = document.body.getAttribute('data-post-id');
+    if (!postBody) return;
+
+    const commentsSection = document.createElement('section');
+    commentsSection.className = 'comments-section container';
+    commentsSection.innerHTML = `
+        <h3>Yorumlar</h3>
+        <div class="comment-form">
+            <div class="form-group">
+                <label>Yorumunuz (${getAnonUsername()})</label>
+                <textarea id="comment-text" rows="3" placeholder="Düşüncelerinizi paylaşın..."></textarea>
+            </div>
+            <button id="submit-comment" class="submit-btn" style="width: auto;">Gönder</button>
+        </div>
+        <div id="comments-list" class="comment-list"></div>
+    `;
+    
+    document.querySelector('.main-content .container').appendChild(commentsSection);
+
+    loadComments(postBody);
+
+    document.getElementById('submit-comment').onclick = () => {
+        const text = document.getElementById('comment-text').value;
+        if (!text.trim()) return;
+
+        const comment = {
+            id: Date.now(),
+            author: getAnonUsername(),
+            text: text,
+            date: new Date().toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', year: 'numeric' }),
+            postId: postBody
+        };
+
+        const comments = JSON.parse(localStorage.getItem('comments') || '[]');
+        comments.push(comment);
+        localStorage.setItem('comments', JSON.stringify(comments));
+
+        document.getElementById('comment-text').value = '';
+        loadComments(postBody);
+    };
+}
+
+function loadComments(postId) {
+    const list = document.getElementById('comments-list');
+    if (!list) return;
+
+    const allComments = JSON.parse(localStorage.getItem('comments') || '[]');
+    const postComments = allComments.filter(c => c.postId === postId);
+    const isAdmin = localStorage.getItem('isAdmin') === 'true';
+
+    if (postComments.length === 0) {
+        list.innerHTML = '<p style="color: white; opacity: 0.7;">Henüz yorum yapılmamış.</p>';
+        return;
+    }
+
+    list.innerHTML = postComments.map(c => `
+        <div class="comment-item">
+            <div class="comment-author">${c.author}</div>
+            <div class="comment-date">${c.date}</div>
+            <div class="comment-content">${c.text}</div>
+            ${isAdmin ? `
+                <div class="comment-actions">
+                    <button class="delete-comment-btn" onclick="deleteComment(${c.id})">Sil</button>
+                </div>
+            ` : ''}
+        </div>
+    `).join('');
+}
+
+window.deleteComment = (id) => {
+    let comments = JSON.parse(localStorage.getItem('comments') || '[]');
+    comments = comments.filter(c => c.id !== id);
+    localStorage.setItem('comments', JSON.stringify(comments));
+    const postId = document.body.getAttribute('data-post-id');
+    loadComments(postId);
+    if (window.location.pathname.includes('admin.html')) {
+        loadAdminComments();
+    }
+};
+
+// Admin Logic
+function initAdmin() {
+    // Login form
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) {
+        loginForm.onsubmit = (e) => {
             e.preventDefault();
-            performSearch();
-        }
-    });
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+
+            // Simple hardcoded admin check for demo
+            if (user === 'admin' && pass === '1234') {
+                localStorage.setItem('isAdmin', 'true');
+                window.location.href = 'admin.html';
+            } else {
+                document.getElementById('login-error').classList.remove('hidden');
+            }
+        };
+    }
+
+    // Logout
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.onclick = (e) => {
+            e.preventDefault();
+            localStorage.removeItem('isAdmin');
+            window.location.href = 'index.html';
+        };
+    }
+
+    // New Post Form
+    const newPostForm = document.getElementById('new-post-form');
+    if (newPostForm) {
+        newPostForm.onsubmit = (e) => {
+            e.preventDefault();
+            const title = document.getElementById('post-title').value;
+            const cat = document.getElementById('post-category').value;
+            const img = document.getElementById('post-image').value;
+            const content = document.getElementById('post-content').value;
+
+            const postId = title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+            
+            const dynamicPosts = JSON.parse(localStorage.getItem('dynamicPosts') || '{}');
+            dynamicPosts[postId] = {
+                title: title,
+                category: cat,
+                image: img,
+                content: content
+            };
+            localStorage.setItem('dynamicPosts', JSON.stringify(dynamicPosts));
+            
+            alert('Yazı başarıyla eklendi! (Not: Statik sitede yeni dosya oluşmaz, ancak bu tarayıcıda Yazılar sayfasında görünecektir.)');
+            newPostForm.reset();
+        };
+    }
+
+    if (window.location.pathname.includes('admin.html')) {
+        loadAdminComments();
+    }
+}
+
+function loadAdminComments() {
+    const list = document.getElementById('admin-comments-list');
+    if (!list) return;
+
+    const allComments = JSON.parse(localStorage.getItem('comments') || '[]');
+    if (allComments.length === 0) {
+        list.innerHTML = '<p>Henüz yorum yok.</p>';
+        return;
+    }
+
+    list.innerHTML = allComments.map(c => `
+        <div class="comment-item" style="margin-bottom: 1rem; border: 1px solid #eee;">
+            <div class="comment-author">${c.author} (Yazı: ${c.postId})</div>
+            <div class="comment-content">${c.text}</div>
+            <div class="comment-actions">
+                <button class="delete-comment-btn" onclick="deleteComment(${c.id})">Sil</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// Contact Logic
+function initContact() {
+    const contactForm = document.getElementById('contact-form');
+    if (contactForm) {
+        contactForm.onsubmit = (e) => {
+            e.preventDefault();
+            alert('Mesajınız başarıyla gönderildi! Teşekkür ederiz.');
+            contactForm.reset();
+        };
+    }
 }
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
-    initMobileMenu();
     initAnimations();
-    loadDynamicImages();
+    loadDynamicContent();
     initSearch();
+    initComments();
+    initAdmin();
+    initContact();
 });
 
-window.addEventListener('resize', initMobileMenu);
-
-console.log('Blog site loaded successfully');
+console.log('Blog site logic initialized');

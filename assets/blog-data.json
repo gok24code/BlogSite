@@ -2,19 +2,23 @@
   "posts": {
     "kultur-ve-dil-farkindaligi": {
       "image": "https://menafn.com/updates/pr/2024-08/23/A_018aeimage_story.jpg",
-      "title": "Kültür ve Dil Farkındalığı"
+      "title": "Kültür ve Dil Farkındalığı",
+      "category": "Kültür"
     },
     "turk-kimligi": {
       "image": "https://i.pinimg.com/736x/19/ea/40/19ea4016b9396b3ff0ce48e4964a6c8b.jpg",
-      "title": "Türk Nedir?"
+      "title": "Türk Nedir?",
+      "category": "Milli Kimlik"
     },
     "turk-mimarisi": {
       "image": "https://keystoneacademic-res.cloudinary.com/image/upload/c_fill,w_3840,h_1645,g_auto/dpr_auto/f_auto/q_auto/v1/element/61/61848_turkey.jpg",
-      "title": "Türk Mimarisinde Estetik ve Şuur"
+      "title": "Türk Mimarisinde Estetik ve Şuur",
+      "category": "Sanat ve Mimari"
     },
     "divanu-lugatit-turk": {
       "image": "https://www.ismailaga.org.tr/wp-content/uploads/2018/01/divani_lugati_turk.jpg",
-      "title": "Dîvânu Lugâti't-Türk'ün Önemi"
+      "title": "Dîvânu Lugâti't-Türk'ün Önemi",
+      "category": "Dil"
     }
   }
 }
