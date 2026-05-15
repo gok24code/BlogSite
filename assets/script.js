@@ -265,7 +265,7 @@ function initComments() {
         }
 
         document.getElementById('comment-text').value = '';
-        loadComments(postBody);
+        setTimeout(() => loadComments(postBody), 500); // Give blob a moment to settle
     };
 }
 

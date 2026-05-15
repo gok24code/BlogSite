@@ -1,7 +1,6 @@
-import { put, list, del } from '@vercel/blob';
+import { put, list } from '@vercel/blob';
 
-// Basit bir küfür filtresi (Örnek amaçlı, liste genişletilebilir)
-const profanityList = ['küfür1', 'küfür2', 'argo1', 'çirkin-kelime']; // Buraya gerçek kelimeleri ekleyebilirsiniz
+const profanityList = ['küfür1', 'küfür2', 'argo1', 'çirkin-kelime'];
 
 function filterText(text) {
     let filteredText = text;
@@ -17,14 +16,19 @@ export default async function handler(request, response) {
     const BLOB_PATH = 'data/comments.json';
 
     try {
-        // Mevcut yorumları getir
         let comments = [];
-        const { blobs } = await list({ prefix: BLOB_PATH });
-        const existingBlob = blobs.find(b => b.pathname === BLOB_PATH);
-        
-        if (existingBlob) {
-            const res = await fetch(existingBlob.url);
-            comments = await res.json();
+        try {
+            const { blobs } = await list();
+            const existingBlob = blobs.find(b => b.pathname === BLOB_PATH);
+            
+            if (existingBlob) {
+                const res = await fetch(existingBlob.url);
+                if (res.ok) {
+                    comments = await res.json();
+                }
+            }
+        } catch (listError) {
+            console.error('List Error (Normal if first time):', listError);
         }
 
         if (method === 'GET') {
@@ -37,16 +41,13 @@ export default async function handler(request, response) {
                 return response.status(400).json({ error: 'Comment text is required' });
             }
 
-            // Küfür Filtresi Uygula
             newComment.text = filterText(newComment.text);
-
             comments.push(newComment);
             
-            // Dosyayı güncelle (Blob'da üzerine yazma doğrudan yok, aynı isimle yeni yüklenir)
             await put(BLOB_PATH, JSON.stringify(comments), {
                 access: 'public',
                 contentType: 'application/json',
-                addRandomSuffix: false // İsmin sabit kalmasını sağlar
+                addRandomSuffix: false
             });
 
             return response.status(201).json(newComment);
@@ -58,7 +59,7 @@ export default async function handler(request, response) {
                 return response.status(400).json({ error: 'Comment ID is required' });
             }
 
-            comments = comments.filter(c => c.id !== parseInt(id) && c.id !== id);
+            comments = comments.filter(c => c.id !== parseInt(id) && String(c.id) !== String(id));
             
             await put(BLOB_PATH, JSON.stringify(comments), {
                 access: 'public',
@@ -71,7 +72,7 @@ export default async function handler(request, response) {
 
         return response.status(405).json({ error: 'Method not allowed' });
     } catch (error) {
-        console.error('Blob Error:', error);
-        return response.status(500).json({ error: 'Internal server error' });
+        console.error('Blob Server Error:', error);
+        return response.status(500).json({ error: error.message });
     }
 }
