@@ -325,6 +325,8 @@ window.deleteComment = async (id) => {
 let editingPostId = null;
 
 function initAdmin() {
+    const isAdmin = localStorage.getItem('isAdmin') === 'true';
+    
     // Login form
     const loginForm = document.getElementById('login-form');
     if (loginForm) {
@@ -333,30 +335,87 @@ function initAdmin() {
             const user = document.getElementById('username').value;
             const pass = document.getElementById('password').value;
 
-            // Simple hardcoded admin check for demo
             if (user === 'admin' && pass === '1234') {
                 localStorage.setItem('isAdmin', 'true');
-                window.location.href = 'admin.html';
+                window.location.href = 'index.html'; // Redirect to home instead of admin.html
             } else {
                 document.getElementById('login-error').classList.remove('hidden');
             }
         };
     }
 
-    // Logout
-    const logoutBtn = document.getElementById('logout-btn');
-    if (logoutBtn) {
-        logoutBtn.onclick = (e) => {
+    // Update Navbar for Admin
+    const navLinks = document.querySelector('.nav-links');
+    if (navLinks) {
+        if (isAdmin) {
+            // Replace Login with Logout and Add New Post link
+            const loginLink = Array.from(navLinks.querySelectorAll('a')).find(a => a.href.includes('login.html'));
+            if (loginLink) {
+                const li = loginLink.parentElement;
+                li.innerHTML = '<a href="#" id="logout-btn">Çıkış Yap</a>';
+                
+                const newPostLi = document.createElement('li');
+                newPostLi.innerHTML = '<a href="#" id="open-post-form">Yeni Yazı</a>';
+                navLinks.insertBefore(newPostLi, li);
+            }
+        }
+    }
+
+    // Logout handling (available on all pages)
+    document.addEventListener('click', (e) => {
+        if (e.target && e.target.id === 'logout-btn') {
             e.preventDefault();
             localStorage.removeItem('isAdmin');
             window.location.href = 'index.html';
-        };
-    }
+        }
+        
+        if (e.target && e.target.id === 'open-post-form') {
+            e.preventDefault();
+            showPostForm();
+        }
+    });
 
-    // New/Edit Post Form
-    const newPostForm = document.getElementById('new-post-form');
-    if (newPostForm) {
-        newPostForm.onsubmit = async (e) => {
+    if (isAdmin) {
+        addAdminControlsToPosts();
+    }
+}
+
+function showPostForm(existingData = null) {
+    // Create or show post form overlay
+    let overlay = document.getElementById('admin-post-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'admin-post-overlay';
+        overlay.style = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:2000; display:flex; justify-content:center; align-items:center; padding:20px;';
+        overlay.innerHTML = `
+            <div class="admin-section" style="width:100%; max-width:800px; max-height:90vh; overflow-y:auto; position:relative;">
+                <button onclick="document.getElementById('admin-post-overlay').remove()" style="position:absolute; right:20px; top:20px; background:none; border:none; color:var(--primary-color); font-size:1.5rem; cursor:pointer;">✕</button>
+                <h3 id="form-title">${existingData ? 'Yazıyı Düzenle' : 'Yeni Yazı Ekle'}</h3>
+                <form id="new-post-form-overlay">
+                    <div class="form-group">
+                        <label for="post-title">Yazı Başlığı</label>
+                        <input type="text" id="post-title" required value="${existingData ? existingData.title : ''}">
+                    </div>
+                    <div class="form-group">
+                        <label for="post-category">Kategori</label>
+                        <input type="text" id="post-category" required placeholder="Örn: Kültür" value="${existingData ? existingData.category : ''}">
+                    </div>
+                    <div class="form-group">
+                        <label for="post-image">Görsel URL</label>
+                        <input type="url" id="post-image" required value="${existingData ? existingData.image : ''}">
+                    </div>
+                    <div class="form-group">
+                        <label for="post-content">İçerik (HTML desteklenir)</label>
+                        <textarea id="post-content" rows="10" required>${existingData ? existingData.content : ''}</textarea>
+                    </div>
+                    <button type="submit" class="submit-btn">${existingData ? 'Güncelle' : 'Yayınla'}</button>
+                </form>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+        
+        const form = document.getElementById('new-post-form-overlay');
+        form.onsubmit = async (e) => {
             e.preventDefault();
             const title = document.getElementById('post-title').value;
             const cat = document.getElementById('post-category').value;
@@ -365,12 +424,7 @@ function initAdmin() {
 
             const postId = editingPostId || title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
             
-            const postData = {
-                title: title,
-                category: cat,
-                image: img,
-                content: content
-            };
+            const postData = { title, category: cat, image: img, content };
 
             try {
                 await fetch('/api/posts', {
@@ -379,94 +433,51 @@ function initAdmin() {
                     body: JSON.stringify({ postId, postData })
                 });
                 alert(editingPostId ? 'Yazı başarıyla güncellendi!' : 'Yazı başarıyla eklendi!');
-                resetPostForm();
-                loadAdminPosts();
+                overlay.remove();
+                editingPostId = null;
+                location.reload(); // Refresh to see changes
             } catch (e) {
                 console.error('API Error:', e);
                 alert('İşlem başarısız oldu.');
             }
         };
     }
-
-    if (window.location.pathname.includes('admin.html')) {
-        loadAdminComments();
-        loadAdminPosts();
-    }
 }
 
-async function loadAdminPosts() {
-    const list = document.getElementById('admin-posts-list');
-    if (!list) return;
+function addAdminControlsToPosts() {
+    // Add edit/delete buttons to blog cards
+    document.querySelectorAll('.blog-card').forEach(async card => {
+        const postId = card.getAttribute('data-post-id');
+        if (!postId) return;
 
-    try {
+        // Check if it's a dynamic post from API
         const res = await fetch('/api/posts');
         const dynamicPosts = await res.json();
         
-        if (Object.keys(dynamicPosts).length === 0) {
-            list.innerHTML = '<p>Henüz dinamik yazı eklenmemiş.</p>';
-            return;
+        if (dynamicPosts[postId]) {
+            const actions = document.createElement('div');
+            actions.className = 'admin-post-actions';
+            actions.style = 'padding: 0 2.5rem 2.5rem; display: flex; gap: 10px;';
+            actions.innerHTML = `
+                <button class="edit-btn" style="flex:1">Düzenle</button>
+                <button class="delete-btn" style="flex:1">Sil</button>
+            `;
+            card.appendChild(actions);
+
+            actions.querySelector('.edit-btn').onclick = () => {
+                editingPostId = postId;
+                showPostForm(dynamicPosts[postId]);
+            };
+
+            actions.querySelector('.delete-btn').onclick = async () => {
+                if (confirm('Bu yazıyı silmek istediğinize emin misiniz?')) {
+                    await fetch(`/api/posts?postId=${postId}`, { method: 'DELETE' });
+                    location.reload();
+                }
+            };
         }
-
-        list.innerHTML = Object.entries(dynamicPosts).map(([id, data]) => `
-            <div class="admin-post-item">
-                <div class="admin-post-info">
-                    <div class="admin-post-title">${data.title}</div>
-                    <div class="admin-post-meta">Kategori: ${data.category} | ID: ${id}</div>
-                </div>
-                <div class="admin-post-actions">
-                    <button class="edit-btn" onclick="editPost('${id}', ${JSON.stringify(data).replace(/"/g, '&quot;')})">Düzenle</button>
-                    <button class="delete-btn" onclick="deletePost('${id}')">Sil</button>
-                </div>
-            </div>
-        `).join('');
-    } catch (e) {
-        console.error('API Error:', e);
-        list.innerHTML = '<p>Yazılar yüklenirken hata oluştu.</p>';
-    }
+    });
 }
-
-window.editPost = (id, data) => {
-    editingPostId = id;
-    document.getElementById('post-title').value = data.title;
-    document.getElementById('post-category').value = data.category;
-    document.getElementById('post-image').value = data.image;
-    document.getElementById('post-content').value = data.content;
-    
-    // UI update for edit mode
-    const form = document.getElementById('new-post-form');
-    let indicator = document.getElementById('edit-indicator');
-    if (!indicator) {
-        indicator = document.createElement('div');
-        indicator.id = 'edit-indicator';
-        indicator.className = 'edit-mode-indicator';
-        form.prepend(indicator);
-    }
-    indicator.innerHTML = `Düzenleme Modu: "${data.title}" <button onclick="resetPostForm()" style="background:none; border:none; color:white; text-decoration:underline; cursor:pointer; margin-left:10px;">İptal</button>`;
-    
-    document.querySelector('#new-post-form .submit-btn').textContent = 'Güncelle';
-    window.scrollTo({ top: form.offsetTop - 100, behavior: 'smooth' });
-};
-
-window.resetPostForm = () => {
-    editingPostId = null;
-    const form = document.getElementById('new-post-form');
-    form.reset();
-    const indicator = document.getElementById('edit-indicator');
-    if (indicator) indicator.remove();
-    document.querySelector('#new-post-form .submit-btn').textContent = 'Yayınla';
-};
-
-window.deletePost = async (id) => {
-    if (!confirm('Bu yazıyı silmek istediğinize emin misiniz?')) return;
-
-    try {
-        await fetch(`/api/posts?postId=${id}`, { method: 'DELETE' });
-        loadAdminPosts();
-    } catch (e) {
-        console.error('API Error:', e);
-        alert('Silme işlemi başarısız oldu.');
-    }
-};
 
 // Contact Logic
 function initContact() {
