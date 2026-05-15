@@ -291,19 +291,19 @@ body {
 
 /* Sidebar Styles */
 .sidebar {
-  position: sticky;
-  top: 2rem;
+    position: sticky;
+    top: 2rem;
+    height: fit-content;
 }
 
 .sidebar-widget {
-  background: var(--bg-white);
-  padding: 2rem;
-  border-radius: 16px;
-  box-shadow: var(--shadow);
-  margin-bottom: 2rem;
-  border: 1px solid var(--border-color);
+    background: var(--bg-white);
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    margin-bottom: 2rem;
+    border: 1px solid var(--border-color);
 }
-
 .widget-title {
   font-size: 1.1rem;
   color: var(--primary-color);
@@ -804,8 +804,60 @@ html {
   transition: all 0.2s ease;
 }
 
-.filter-btn:hover,
-.filter-btn.active {
-  background: var(--primary-color);
-  color: white;
+/* Admin Post Management Styles */
+.admin-post-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    border-bottom: 1px solid var(--bg-light);
+    gap: 1rem;
 }
+
+.admin-post-info {
+    flex: 1;
+}
+
+.admin-post-title {
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+.admin-post-meta {
+    font-size: 0.8rem;
+    color: var(--text-light);
+}
+
+.admin-post-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.edit-btn {
+    background: #3498db;
+    color: white;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.delete-btn {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.edit-mode-indicator {
+    background: #f39c12;
+    color: white;
+    padding: 0.5rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-weight: 700;
+    text-align: center;
+}
+

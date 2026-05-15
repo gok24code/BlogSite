@@ -322,6 +322,8 @@ window.deleteComment = async (id) => {
 };
 
 // Admin Logic
+let editingPostId = null;
+
 function initAdmin() {
     // Login form
     const loginForm = document.getElementById('login-form');
@@ -351,7 +353,7 @@ function initAdmin() {
         };
     }
 
-    // New Post Form
+    // New/Edit Post Form
     const newPostForm = document.getElementById('new-post-form');
     if (newPostForm) {
         newPostForm.onsubmit = async (e) => {
@@ -361,7 +363,7 @@ function initAdmin() {
             const img = document.getElementById('post-image').value;
             const content = document.getElementById('post-content').value;
 
-            const postId = title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+            const postId = editingPostId || title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
             
             const postData = {
                 title: title,
@@ -372,55 +374,99 @@ function initAdmin() {
 
             try {
                 await fetch('/api/posts', {
-                    method: 'POST',
+                    method: editingPostId ? 'PUT' : 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ postId, postData })
                 });
+                alert(editingPostId ? 'Yazı başarıyla güncellendi!' : 'Yazı başarıyla eklendi!');
+                resetPostForm();
+                loadAdminPosts();
             } catch (e) {
-                console.error('API Error, saving locally:', e);
-                const dynamicPosts = JSON.parse(localStorage.getItem('dynamicPosts') || '{}');
-                dynamicPosts[postId] = postData;
-                localStorage.setItem('dynamicPosts', JSON.stringify(dynamicPosts));
+                console.error('API Error:', e);
+                alert('İşlem başarısız oldu.');
             }
-            
-            alert('Yazı başarıyla eklendi! (Vercel Blob üzerine kaydedildi.)');
-            newPostForm.reset();
         };
     }
 
     if (window.location.pathname.includes('admin.html')) {
         loadAdminComments();
+        loadAdminPosts();
     }
 }
 
-async function loadAdminComments() {
-    const list = document.getElementById('admin-comments-list');
+async function loadAdminPosts() {
+    const list = document.getElementById('admin-posts-list');
     if (!list) return;
 
-    let allComments = [];
     try {
-        const res = await fetch('/api/comments');
-        if (res.ok) allComments = await res.json();
+        const res = await fetch('/api/posts');
+        const dynamicPosts = await res.json();
+        
+        if (Object.keys(dynamicPosts).length === 0) {
+            list.innerHTML = '<p>Henüz dinamik yazı eklenmemiş.</p>';
+            return;
+        }
+
+        list.innerHTML = Object.entries(dynamicPosts).map(([id, data]) => `
+            <div class="admin-post-item">
+                <div class="admin-post-info">
+                    <div class="admin-post-title">${data.title}</div>
+                    <div class="admin-post-meta">Kategori: ${data.category} | ID: ${id}</div>
+                </div>
+                <div class="admin-post-actions">
+                    <button class="edit-btn" onclick="editPost('${id}', ${JSON.stringify(data).replace(/"/g, '&quot;')})">Düzenle</button>
+                    <button class="delete-btn" onclick="deletePost('${id}')">Sil</button>
+                </div>
+            </div>
+        `).join('');
     } catch (e) {
         console.error('API Error:', e);
-        allComments = JSON.parse(localStorage.getItem('comments') || '[]');
+        list.innerHTML = '<p>Yazılar yüklenirken hata oluştu.</p>';
     }
-
-    if (allComments.length === 0) {
-        list.innerHTML = '<p>Henüz yorum yok.</p>';
-        return;
-    }
-
-    list.innerHTML = allComments.map(c => `
-        <div class="comment-item" style="margin-bottom: 1rem; border: 1px solid #eee;">
-            <div class="comment-author">${c.author} (Yazı: ${c.postId})</div>
-            <div class="comment-content">${c.text}</div>
-            <div class="comment-actions">
-                <button class="delete-comment-btn" onclick="deleteComment(${c.id})">Sil</button>
-            </div>
-        </div>
-    `).join('');
 }
+
+window.editPost = (id, data) => {
+    editingPostId = id;
+    document.getElementById('post-title').value = data.title;
+    document.getElementById('post-category').value = data.category;
+    document.getElementById('post-image').value = data.image;
+    document.getElementById('post-content').value = data.content;
+    
+    // UI update for edit mode
+    const form = document.getElementById('new-post-form');
+    let indicator = document.getElementById('edit-indicator');
+    if (!indicator) {
+        indicator = document.createElement('div');
+        indicator.id = 'edit-indicator';
+        indicator.className = 'edit-mode-indicator';
+        form.prepend(indicator);
+    }
+    indicator.innerHTML = `Düzenleme Modu: "${data.title}" <button onclick="resetPostForm()" style="background:none; border:none; color:white; text-decoration:underline; cursor:pointer; margin-left:10px;">İptal</button>`;
+    
+    document.querySelector('#new-post-form .submit-btn').textContent = 'Güncelle';
+    window.scrollTo({ top: form.offsetTop - 100, behavior: 'smooth' });
+};
+
+window.resetPostForm = () => {
+    editingPostId = null;
+    const form = document.getElementById('new-post-form');
+    form.reset();
+    const indicator = document.getElementById('edit-indicator');
+    if (indicator) indicator.remove();
+    document.querySelector('#new-post-form .submit-btn').textContent = 'Yayınla';
+};
+
+window.deletePost = async (id) => {
+    if (!confirm('Bu yazıyı silmek istediğinize emin misiniz?')) return;
+
+    try {
+        await fetch(`/api/posts?postId=${id}`, { method: 'DELETE' });
+        loadAdminPosts();
+    } catch (e) {
+        console.error('API Error:', e);
+        alert('Silme işlemi başarısız oldu.');
+    }
+};
 
 // Contact Logic
 function initContact() {

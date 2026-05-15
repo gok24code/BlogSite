@@ -19,7 +19,7 @@ export default async function handler(request, response) {
             return response.status(200).json(dynamicPosts);
         }
 
-        if (method === 'POST') {
+        if (method === 'POST' || method === 'PUT') {
             const { postId, postData } = request.body;
             if (!postId || !postData) {
                 return response.status(400).json({ error: 'Post ID and data are required' });
@@ -33,7 +33,26 @@ export default async function handler(request, response) {
                 addRandomSuffix: false
             });
 
-            return response.status(201).json({ success: true });
+            return response.status(200).json({ success: true });
+        }
+
+        if (method === 'DELETE') {
+            const { postId } = request.query;
+            if (!postId) {
+                return response.status(400).json({ error: 'Post ID is required' });
+            }
+
+            if (dynamicPosts[postId]) {
+                delete dynamicPosts[postId];
+                await put(BLOB_PATH, JSON.stringify(dynamicPosts), {
+                    access: 'public',
+                    contentType: 'application/json',
+                    addRandomSuffix: false
+                });
+                return response.status(200).json({ success: true });
+            } else {
+                return response.status(404).json({ error: 'Post not found' });
+            }
         }
 
         return response.status(405).json({ error: 'Method not allowed' });
