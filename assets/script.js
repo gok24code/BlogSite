@@ -1,3 +1,26 @@
+// Mobile menu toggle
+function initMobileMenu() {
+    const toggleBtn = document.createElement('button');
+    toggleBtn.className = 'mobile-menu-toggle';
+    toggleBtn.innerHTML = '☰';
+    document.querySelector('.navbar .container').appendChild(toggleBtn);
+
+    const navLinks = document.querySelector('.nav-links');
+    
+    toggleBtn.onclick = () => {
+        navLinks.classList.toggle('show');
+        toggleBtn.innerHTML = navLinks.classList.contains('show') ? '✕' : '☰';
+    };
+
+    // Close menu when clicking a link
+    navLinks.querySelectorAll('a').forEach(link => {
+        link.onclick = () => {
+            navLinks.classList.remove('show');
+            toggleBtn.innerHTML = '☰';
+        };
+    });
+}
+
 // Utility: Get anonymous username
 function getAnonUsername() {
     let anonId = localStorage.getItem('anonId');
@@ -50,11 +73,19 @@ function initAnimations() {
 async function loadDynamicContent() {
     try {
         const response = await fetch('assets/blog-data.json');
-        const data = await response.json();
+        const staticData = await response.json();
 
-        // Load dynamic posts from localStorage (if any)
-        const localPosts = JSON.parse(localStorage.getItem('dynamicPosts') || '{}');
-        const allPosts = { ...data.posts, ...localPosts };
+        // Load dynamic posts from Vercel KV API
+        let dynamicPosts = {};
+        try {
+            const apiRes = await fetch('/api/posts');
+            if (apiRes.ok) dynamicPosts = await apiRes.json();
+        } catch (e) {
+            console.error('API Error, falling back to local:', e);
+            dynamicPosts = JSON.parse(localStorage.getItem('dynamicPosts') || '{}');
+        }
+
+        const allPosts = { ...staticData.posts, ...dynamicPosts };
 
         // Update Blog Cards
         document.querySelectorAll('.blog-card').forEach(card => {
@@ -201,7 +232,7 @@ function initComments() {
 
     loadComments(postBody);
 
-    document.getElementById('submit-comment').onclick = () => {
+    document.getElementById('submit-comment').onclick = async () => {
         const text = document.getElementById('comment-text').value;
         if (!text.trim()) return;
 
@@ -213,20 +244,37 @@ function initComments() {
             postId: postBody
         };
 
-        const comments = JSON.parse(localStorage.getItem('comments') || '[]');
-        comments.push(comment);
-        localStorage.setItem('comments', JSON.stringify(comments));
+        try {
+            await fetch('/api/comments', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(comment)
+            });
+        } catch (e) {
+            console.error('API Error, saving locally:', e);
+            const comments = JSON.parse(localStorage.getItem('comments') || '[]');
+            comments.push(comment);
+            localStorage.setItem('comments', JSON.stringify(comments));
+        }
 
         document.getElementById('comment-text').value = '';
         loadComments(postBody);
     };
 }
 
-function loadComments(postId) {
+async function loadComments(postId) {
     const list = document.getElementById('comments-list');
     if (!list) return;
 
-    const allComments = JSON.parse(localStorage.getItem('comments') || '[]');
+    let allComments = [];
+    try {
+        const res = await fetch('/api/comments');
+        if (res.ok) allComments = await res.json();
+    } catch (e) {
+        console.error('API Error, loading from local:', e);
+        allComments = JSON.parse(localStorage.getItem('comments') || '[]');
+    }
+
     const postComments = allComments.filter(c => c.postId === postId);
     const isAdmin = localStorage.getItem('isAdmin') === 'true';
 
@@ -249,10 +297,16 @@ function loadComments(postId) {
     `).join('');
 }
 
-window.deleteComment = (id) => {
-    let comments = JSON.parse(localStorage.getItem('comments') || '[]');
-    comments = comments.filter(c => c.id !== id);
-    localStorage.setItem('comments', JSON.stringify(comments));
+window.deleteComment = async (id) => {
+    try {
+        await fetch(`/api/comments?id=${id}`, { method: 'DELETE' });
+    } catch (e) {
+        console.error('API Error, deleting locally:', e);
+        let comments = JSON.parse(localStorage.getItem('comments') || '[]');
+        comments = comments.filter(c => c.id !== id);
+        localStorage.setItem('comments', JSON.stringify(comments));
+    }
+
     const postId = document.body.getAttribute('data-post-id');
     loadComments(postId);
     if (window.location.pathname.includes('admin.html')) {
@@ -293,7 +347,7 @@ function initAdmin() {
     // New Post Form
     const newPostForm = document.getElementById('new-post-form');
     if (newPostForm) {
-        newPostForm.onsubmit = (e) => {
+        newPostForm.onsubmit = async (e) => {
             e.preventDefault();
             const title = document.getElementById('post-title').value;
             const cat = document.getElementById('post-category').value;
@@ -302,16 +356,27 @@ function initAdmin() {
 
             const postId = title.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
             
-            const dynamicPosts = JSON.parse(localStorage.getItem('dynamicPosts') || '{}');
-            dynamicPosts[postId] = {
+            const postData = {
                 title: title,
                 category: cat,
                 image: img,
                 content: content
             };
-            localStorage.setItem('dynamicPosts', JSON.stringify(dynamicPosts));
+
+            try {
+                await fetch('/api/posts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ postId, postData })
+                });
+            } catch (e) {
+                console.error('API Error, saving locally:', e);
+                const dynamicPosts = JSON.parse(localStorage.getItem('dynamicPosts') || '{}');
+                dynamicPosts[postId] = postData;
+                localStorage.setItem('dynamicPosts', JSON.stringify(dynamicPosts));
+            }
             
-            alert('Yazı başarıyla eklendi! (Not: Statik sitede yeni dosya oluşmaz, ancak bu tarayıcıda Yazılar sayfasında görünecektir.)');
+            alert('Yazı başarıyla eklendi! (Vercel Blob üzerine kaydedildi.)');
             newPostForm.reset();
         };
     }
@@ -321,11 +386,19 @@ function initAdmin() {
     }
 }
 
-function loadAdminComments() {
+async function loadAdminComments() {
     const list = document.getElementById('admin-comments-list');
     if (!list) return;
 
-    const allComments = JSON.parse(localStorage.getItem('comments') || '[]');
+    let allComments = [];
+    try {
+        const res = await fetch('/api/comments');
+        if (res.ok) allComments = await res.json();
+    } catch (e) {
+        console.error('API Error:', e);
+        allComments = JSON.parse(localStorage.getItem('comments') || '[]');
+    }
+
     if (allComments.length === 0) {
         list.innerHTML = '<p>Henüz yorum yok.</p>';
         return;
@@ -356,6 +429,7 @@ function initContact() {
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
+    initMobileMenu();
     initAnimations();
     loadDynamicContent();
     initSearch();
